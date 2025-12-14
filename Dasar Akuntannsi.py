@@ -30,7 +30,6 @@ menu = st.sidebar.selectbox(
 # ================== HOME ==================
 if menu == "🏠 Home":
     st.title("📊 Aplikasi Akuntansi")
-    st.markdown("""
 
 # ================== JURNAL UMUM ==================
 elif menu == "📘 Jurnal Umum":
