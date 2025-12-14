@@ -12,41 +12,50 @@ st.set_page_config(
 # ===================== CSS MODERN (BIRU PUTIH) =====================
 st.markdown("""
 <style>
-.stApp { background-color: #F8FAFC; }
+/* ===== Background App ===== */
+.stApp {
+    background-color: #F8FAFC;
+}
 
+/* ===== Sidebar ===== */
 section[data-testid="stSidebar"] {
     background-color: #1E3A8A;
 }
+
+/* Default teks sidebar */
 section[data-testid="stSidebar"] * {
     color: white !important;
 }
 
-.stButton>button {
-    background-color: #2563EB;
-    color: white;
+/* ===== RADIO MENU ===== */
+div[data-testid="stRadio"] > div {
+    background-color: white;
+    border-radius: 14px;
+    padding: 10px;
+}
+
+/* Item menu */
+div[data-testid="stRadio"] label {
+    padding: 12px 16px;
     border-radius: 10px;
-    padding: 10px 18px;
     font-weight: 600;
-    border: none;
-}
-.stButton>button:hover {
-    background-color: #1D4ED8;
+    color: #1E293B !important;
 }
 
-div[data-testid="stMetric"] {
-    background: white;
-    padding: 18px;
-    border-radius: 16px;
-    box-shadow: 0 10px 20px rgba(0,0,0,.08);
+/* HOVER */
+div[data-testid="stRadio"] label:hover {
+    background-color: #E0E7FF;
+    color: #1E3A8A !important;
 }
 
-.stDataFrame {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 6px 14px rgba(0,0,0,.06);
+/* ITEM TERPILIH (INI YANG PENTING) */
+div[data-testid="stRadio"] label[data-selected="true"] {
+    background-color: #2563EB !important;
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ===================== SESSION STATE =====================
 if "data" not in st.session_state:
