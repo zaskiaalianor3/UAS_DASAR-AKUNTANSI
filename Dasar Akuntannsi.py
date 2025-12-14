@@ -30,13 +30,7 @@ menu = st.sidebar.selectbox(
 # ================== HOME ==================
 if menu == "🏠 Home":
     st.title("📊 Aplikasi Akuntansi")
-    st.success("✔ Menggunakan sistem 1 transaksi = 2 akun + jenis akun")
     st.markdown("""
-    **Fitur:**
-    - Validasi Debit = Kredit
-    - Jenis Akun (Aset, Kewajiban, Modal, Pendapatan, Beban)
-    - Edit & Hapus Transaksi
-    """)
 
 # ================== JURNAL UMUM ==================
 elif menu == "📘 Jurnal Umum":
@@ -54,7 +48,7 @@ elif menu == "📘 Jurnal Umum":
             jenis_kredit = st.selectbox("Jenis Akun Kredit", JENIS_AKUN)
 
         jumlah = st.number_input("Jumlah", min_value=0.0)
-        simpan = st.form_submit_button("💾 Simpan Transaksi")
+        simpan = st.form_submit_button("Simpan Transaksi")
 
         if simpan:
             if akun_debit == "" or akun_kredit == "":
@@ -94,7 +88,7 @@ elif menu == "📘 Jurnal Umum":
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🗑️ Hapus"):
+            if st.button("Hapus"):
                 st.session_state.data = [
                     d for d in st.session_state.data if d["ID"] != pilih_id
                 ]
@@ -102,7 +96,7 @@ elif menu == "📘 Jurnal Umum":
                 st.experimental_rerun()
 
         with col2:
-            if st.button("✏️ Edit"):
+            if st.button("Edit"):
                 st.session_state.edit_id = pilih_id
                 st.experimental_rerun()
     else:
@@ -110,7 +104,7 @@ elif menu == "📘 Jurnal Umum":
 
 # ================== EDIT ==================
 if st.session_state.edit_id:
-    st.subheader("✏️ Edit Transaksi")
+    st.subheader("Edit Transaksi")
 
     df_edit = pd.DataFrame(st.session_state.data)
     trx = df_edit[df_edit["ID"] == st.session_state.edit_id]
@@ -159,8 +153,8 @@ if st.session_state.edit_id:
             st.experimental_rerun()
 
 # ================== LIHAT SEMUA ==================
-elif menu == "📑 Lihat Semua":
-    st.title("📑 Semua Laporan")
+elif menu == "Lihat Semua":
+    st.title("Semua Laporan")
 
     df = pd.DataFrame(st.session_state.data)
 
@@ -175,8 +169,8 @@ elif menu == "📑 Lihat Semua":
         st.dataframe(buku_besar, use_container_width=True)
 
 # ================== SIMPAN EXCEL ==================
-elif menu == "💾 Simpan ke Excel":
-    st.title("💾 Simpan ke Excel")
+elif menu == "Simpan ke Excel":
+    st.title("Simpan ke Excel")
 
     df = pd.DataFrame(st.session_state.data)
 
@@ -193,7 +187,7 @@ elif menu == "💾 Simpan ke Excel":
         output.seek(0)
 
         st.download_button(
-            "📥 Download Excel",
+            "Download Excel",
             data=output,
             file_name="laporan_akuntansi.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
