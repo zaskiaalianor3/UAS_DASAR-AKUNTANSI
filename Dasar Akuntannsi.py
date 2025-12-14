@@ -53,7 +53,8 @@ df = pd.DataFrame(st.session_state.data)
 
 # ===================== HOME + JURNAL UMUM =====================
 if menu == "Home & Jurnal":
-    st.title("Aplikasi Akuntansi Sederhana")
+    st.title("APLIKASI AKUNTANSI SEDERHANA")
+    st.write("Input transaksi dan lihat laporan secara otomatis")
 
     # ===== DASHBOARD =====
     col1, col2, col3 = st.columns(3)
