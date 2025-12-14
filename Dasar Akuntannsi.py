@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 import uuid
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
 # ================== KONFIGURASI ==================
 st.set_page_config(page_title="Aplikasi Akuntansi", layout="wide")
@@ -20,22 +21,21 @@ JENIS_AKUN = ["Aset", "Kewajiban", "Modal", "Pendapatan", "Beban"]
 menu = st.sidebar.selectbox(
     "📂 Menu",
     [
-        "🏠 Home",
-        "📘 Jurnal Umum",
-        "📑 Lihat Semua",
-        "💾 Simpan ke Excel"
+        "Jurnal Umum",
+        "Buku Besar",
+        "Laba Rugi",
+        "Neraca",
+        "Lihat Semua",
+        "Simpan ke Excel"
     ]
 )
 
-# ================== HOME ==================
-if menu == "🏠 Home":
+# ================== HOME + JURNAL UMUM ==================
+if menu == "Jurnal Umum":
     st.title("📊 Aplikasi Akuntansi Sederhana")
-    
-# ================== JURNAL UMUM ==================
-elif menu == "📘 Jurnal Umum":
-    st.title("📘 Jurnal Umum")
+   
+    st.subheader("Input Jurnal Umum")
 
-    # ===== FORM INPUT =====
     with st.form("form_jurnal"):
         tanggal = st.date_input("Tanggal")
 
@@ -48,289 +48,147 @@ elif menu == "📘 Jurnal Umum":
             jenis_kredit = st.selectbox("Jenis Akun Kredit", JENIS_AKUN)
 
         jumlah = st.number_input("Jumlah", min_value=0.0)
-        simpan = st.form_submit_button("Simpan Transaksi")
+        simpan = st.form_submit_button("Simpan")
 
         if simpan:
-            if akun_debit == "" or akun_kredit == "":
-                st.error("Nama akun tidak boleh kosong")
-            elif jumlah <= 0:
-                st.error("Jumlah harus lebih dari 0")
+            if akun_debit == "" or akun_kredit == "" or jumlah <= 0:
+                st.error("Data tidak valid")
             else:
                 trx_id = str(uuid.uuid4())
-
-                st.session_state.data.append({
-                    "ID": trx_id,
-                    "Tanggal": tanggal,
-                    "Akun": akun_debit,
-                    "Jenis Akun": jenis_debit,
-                    "Debit": jumlah,
-                    "Kredit": 0
-                })
-                st.session_state.data.append({
-                    "ID": trx_id,
-                    "Tanggal": tanggal,
-                    "Akun": akun_kredit,
-                    "Jenis Akun": jenis_kredit,
-                    "Debit": 0,
-                    "Kredit": jumlah
-                })
-                st.success("✅ Transaksi berhasil disimpan (SEIMBANG)")
-
-    df = pd.DataFrame(st.session_state.data)
-
-    # ===== TABEL JURNAL =====
-    st.subheader("📋 Data Jurnal Umum")
-    if df.empty:
-        st.info("Belum ada transaksi")
-    else:
-        st.dataframe(df, use_container_width=True)
-
-        # ===== KELOLA TRANSAKSI =====
-        st.subheader("✏️ Kelola Transaksi")
-        pilih_id = st.selectbox("Pilih ID Transaksi", df["ID"].unique())
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🗑️ Hapus Transaksi"):
-                st.session_state.data = [
-                    d for d in st.session_state.data if d["ID"] != pilih_id
-                ]
-                st.experimental_rerun()
-
-        with col2:
-            if st.button("✏️ Edit Transaksi"):
-                st.session_state.edit_id = pilih_id
-
-        # ===== FORM EDIT =====
-        if st.session_state.edit_id == pilih_id:
-            trx = df[df["ID"] == pilih_id]
-            debit_row = trx[trx["Debit"] > 0].iloc[0]
-            kredit_row = trx[trx["Kredit"] > 0].iloc[0]
-
-            st.markdown("### ✏️ Edit Transaksi")
-            with st.form("form_edit"):
-                tanggal_baru = st.date_input("Tanggal", debit_row["Tanggal"])
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    akun_debit_baru = st.text_input("Akun Debit", debit_row["Akun"])
-                    jenis_debit_baru = st.selectbox(
-                        "Jenis Akun Debit",
-                        JENIS_AKUN,
-                        index=JENIS_AKUN.index(debit_row["Jenis Akun"])
-                    )
-                with col2:
-                    akun_kredit_baru = st.text_input("Akun Kredit", kredit_row["Akun"])
-                    jenis_kredit_baru = st.selectbox(
-                        "Jenis Akun Kredit",
-                        JENIS_AKUN,
-                        index=JENIS_AKUN.index(kredit_row["Jenis Akun"])
-                    )
-
-                jumlah_baru = st.number_input("Jumlah", value=float(debit_row["Debit"]))
-                update = st.form_submit_button("🔄 Update")
-
-                if update:
-                    st.session_state.data = [
-                        d for d in st.session_state.data if d["ID"] != pilih_id
-                    ]
-                    st.session_state.data.append({
-                        "ID": pilih_id,
-                        "Tanggal": tanggal_baru,
-                        "Akun": akun_debit_baru,
-                        "Jenis Akun": jenis_debit_baru,
-                        "Debit": jumlah_baru,
+                st.session_state.data.extend([
+                    {
+                        "ID": trx_id,
+                        "Tanggal": tanggal,
+                        "Akun": akun_debit,
+                        "Jenis Akun": jenis_debit,
+                        "Debit": jumlah,
                         "Kredit": 0
-                    })
-                    st.session_state.data.append({
-                        "ID": pilih_id,
-                        "Tanggal": tanggal_baru,
-                        "Akun": akun_kredit_baru,
-                        "Jenis Akun": jenis_kredit_baru,
+                    },
+                    {
+                        "ID": trx_id,
+                        "Tanggal": tanggal,
+                        "Akun": akun_kredit,
+                        "Jenis Akun": jenis_kredit,
                         "Debit": 0,
-                        "Kredit": jumlah_baru
-                    })
-                    st.session_state.edit_id = None
-                    st.experimental_rerun()
+                        "Kredit": jumlah
+                    }
+                ])
+                st.success("Transaksi tersimpan")
 
-# ================== LIHAT SEMUA ==================
-# ================== LIHAT SEMUA ==================
-elif menu == "📑 Lihat Semua":
-    st.title("📑 Semua Laporan")
+    df = pd.DataFrame(st.session_state.data)
+    st.subheader("Jurnal Umum")
+    st.dataframe(df, use_container_width=True)
 
+# ================== BUKU BESAR ==================
+elif menu == "Buku Besar":
+    st.title("Buku Besar")
     df = pd.DataFrame(st.session_state.data)
 
     if df.empty:
-        st.warning("Belum ada data transaksi")
+        st.warning("Belum ada data")
     else:
-        # ================== JURNAL UMUM ==================
-        st.subheader("📘 Jurnal Umum")
-        st.dataframe(df, use_container_width=True)
-
-        # ================== BUKU BESAR ==================
-        st.subheader("📗 Buku Besar")
-        buku_besar = (
-            df.groupby(["Jenis Akun", "Akun"])[["Debit", "Kredit"]]
-            .sum()
-            .reset_index()
-        )
+        buku_besar = df.groupby(
+            ["Jenis Akun", "Akun"]
+        )[["Debit", "Kredit"]].sum().reset_index()
         st.dataframe(buku_besar, use_container_width=True)
 
-        # ================== LAPORAN LABA RUGI ==================
-        st.subheader("📈 Laporan Laba Rugi")
+# ================== LABA RUGI ==================
+elif menu == "Laba Rugi":
+    st.title("Laporan Laba Rugi")
+    df = pd.DataFrame(st.session_state.data)
 
-        pendapatan = buku_besar[buku_besar["Jenis Akun"] == "Pendapatan"]
-        beban = buku_besar[buku_besar["Jenis Akun"] == "Beban"]
+    if df.empty:
+        st.warning("Belum ada data")
+    else:
+        bb = df.groupby(
+            ["Jenis Akun", "Akun"]
+        )[["Debit", "Kredit"]].sum().reset_index()
 
-        total_pendapatan = pendapatan["Kredit"].sum() - pendapatan["Debit"].sum()
-        total_beban = beban["Debit"].sum() - beban["Kredit"].sum()
-        laba_bersih = total_pendapatan - total_beban
+        pendapatan = bb[bb["Jenis Akun"] == "Pendapatan"]
+        beban = bb[bb["Jenis Akun"] == "Beban"]
+
+        total_pendapatan = pendapatan["Kredit"].sum()
+        total_beban = beban["Debit"].sum()
+        laba = total_pendapatan - total_beban
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("Total Pendapatan", f"Rp {total_pendapatan:,.0f}")
-        col2.metric("Total Beban", f"Rp {total_beban:,.0f}")
-        col3.metric("Laba Bersih", f"Rp {laba_bersih:,.0f}")
+        col1.metric("Pendapatan", f"Rp {total_pendapatan:,.0f}")
+        col2.metric("Beban", f"Rp {total_beban:,.0f}")
+        col3.metric("Laba Bersih", f"Rp {laba:,.0f}")
 
-        # ================== NERACA ==================
-        st.subheader("⚖️ Neraca")
+# ================== NERACA ==================
+elif menu == "Neraca":
+    st.title("Neraca")
+    df = pd.DataFrame(st.session_state.data)
 
-        aset = buku_besar[buku_besar["Jenis Akun"] == "Aset"]
-        kewajiban = buku_besar[buku_besar["Jenis Akun"] == "Kewajiban"]
-        modal = buku_besar[buku_besar["Jenis Akun"] == "Modal"]
+    if df.empty:
+        st.warning("Belum ada data")
+    else:
+        bb = df.groupby(
+            ["Jenis Akun", "Akun"]
+        )[["Debit", "Kredit"]].sum().reset_index()
 
-        total_aset = aset["Debit"].sum() - aset["Kredit"].sum()
-        total_kewajiban = kewajiban["Kredit"].sum() - kewajiban["Debit"].sum()
-        total_modal = modal["Kredit"].sum() - modal["Debit"].sum()
+        aset = bb[bb["Jenis Akun"] == "Aset"]["Debit"].sum()
+        kewajiban = bb[bb["Jenis Akun"] == "Kewajiban"]["Kredit"].sum()
+        modal = bb[bb["Jenis Akun"] == "Modal"]["Kredit"].sum()
 
-        # Modal ditambah Laba Bersih
-        modal_akhir = total_modal + laba_bersih
-        total_pasiva = total_kewajiban + modal_akhir
+        pendapatan = bb[bb["Jenis Akun"] == "Pendapatan"]["Kredit"].sum()
+        beban = bb[bb["Jenis Akun"] == "Beban"]["Debit"].sum()
+        laba = pendapatan - beban
+
+        modal_akhir = modal + laba
 
         col1, col2 = st.columns(2)
-        col1.metric("Total Aset", f"Rp {total_aset:,.0f}")
-        col2.metric("Total Kewajiban + Modal", f"Rp {total_pasiva:,.0f}")
+        col1.metric("Total Aset", f"Rp {aset:,.0f}")
+        col2.metric("Kewajiban + Modal", f"Rp {(kewajiban + modal_akhir):,.0f}")
 
-        if total_aset == total_pasiva:
-            st.success("✔ Neraca Seimbang")
-        else:
-            st.error("❌ Neraca Tidak Seimbang")
+# ================== LIHAT SEMUA ==================
+elif menu == "Lihat Semua":
+    st.title("Semua Laporan")
+    df = pd.DataFrame(st.session_state.data)
+    st.dataframe(df, use_container_width=True)
 
 # ================== SIMPAN EXCEL ==================
-# ================== SIMPAN EXCEL ==================
-elif menu == "💾 Simpan ke Excel":
-    st.title("💾 Simpan ke Excel")
+elif menu == "Simpan ke Excel":
+    st.title("Simpan ke Excel")
 
     df = pd.DataFrame(st.session_state.data)
 
     if df.empty:
         st.warning("Belum ada data")
     else:
-        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+        bb = df.groupby(
+            ["Jenis Akun", "Akun"]
+        )[["Debit", "Kredit"]].sum().reset_index()
 
-        # ================== BUKU BESAR ==================
-        buku_besar = (
-            df.groupby(["Jenis Akun", "Akun"])[["Debit", "Kredit"]]
-            .sum()
-            .reset_index()
-        )
+        pendapatan = bb[bb["Jenis Akun"] == "Pendapatan"]["Kredit"].sum()
+        beban = bb[bb["Jenis Akun"] == "Beban"]["Debit"].sum()
+        laba = pendapatan - beban
 
-        # ================== LABA RUGI ==================
-        pendapatan = buku_besar[buku_besar["Jenis Akun"] == "Pendapatan"]
-        beban = buku_besar[buku_besar["Jenis Akun"] == "Beban"]
-
-        total_pendapatan = pendapatan["Kredit"].sum() - pendapatan["Debit"].sum()
-        total_beban = beban["Debit"].sum() - beban["Kredit"].sum()
-        laba_bersih = total_pendapatan - total_beban
-
-        laba_rugi_df = pd.DataFrame({
-            "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
-            "Jumlah": [total_pendapatan, total_beban, laba_bersih]
+        laba_rugi = pd.DataFrame({
+            "Keterangan": ["Pendapatan", "Beban", "Laba Bersih"],
+            "Jumlah": [pendapatan, beban, laba]
         })
 
-        # ================== NERACA ==================
-        aset = buku_besar[buku_besar["Jenis Akun"] == "Aset"]
-        kewajiban = buku_besar[buku_besar["Jenis Akun"] == "Kewajiban"]
-        modal = buku_besar[buku_besar["Jenis Akun"] == "Modal"]
+        aset = bb[bb["Jenis Akun"] == "Aset"]["Debit"].sum()
+        kewajiban = bb[bb["Jenis Akun"] == "Kewajiban"]["Kredit"].sum()
+        modal = bb[bb["Jenis Akun"] == "Modal"]["Kredit"].sum()
 
-        total_aset = aset["Debit"].sum() - aset["Kredit"].sum()
-        total_kewajiban = kewajiban["Kredit"].sum() - kewajiban["Debit"].sum()
-        total_modal = modal["Kredit"].sum() - modal["Debit"].sum()
-
-        modal_akhir = total_modal + laba_bersih
-        total_pasiva = total_kewajiban + modal_akhir
-
-        neraca_df = pd.DataFrame({
-            "Keterangan": [
-                "Total Aset",
-                "Total Kewajiban",
-                "Modal Akhir",
-                "Total Kewajiban + Modal"
-            ],
-            "Jumlah": [
-                total_aset,
-                total_kewajiban,
-                modal_akhir,
-                total_pasiva
-            ]
+        neraca = pd.DataFrame({
+            "Keterangan": ["Aset", "Kewajiban", "Modal Akhir"],
+            "Jumlah": [aset, kewajiban, modal + laba]
         })
 
-        # ================== EXPORT & FORMAT ==================
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            df.to_excel(writer, sheet_name="Jurnal Umum", index=False, startrow=2)
-            buku_besar.to_excel(writer, sheet_name="Buku Besar", index=False, startrow=2)
-            laba_rugi_df.to_excel(writer, sheet_name="Laba Rugi", index=False, startrow=2)
-            neraca_df.to_excel(writer, sheet_name="Neraca", index=False, startrow=2)
-
-            workbook = writer.book
-
-            def format_sheet(sheet_name, title):
-                ws = workbook[sheet_name]
-
-                # Judul
-                ws.merge_cells("A1:D1")
-                ws["A1"] = title
-                ws["A1"].font = Font(bold=True, size=14)
-                ws["A1"].alignment = Alignment(horizontal="center")
-
-                header_fill = PatternFill("solid", fgColor="BDD7EE")
-                border = Border(
-                    left=Side(style="thin"),
-                    right=Side(style="thin"),
-                    top=Side(style="thin"),
-                    bottom=Side(style="thin")
-                )
-
-                for cell in ws[3]:
-                    cell.font = Font(bold=True)
-                    cell.fill = header_fill
-                    cell.border = border
-
-                for row in ws.iter_rows(min_row=4):
-                    for cell in row:
-                        cell.border = border
-                        if isinstance(cell.value, (int, float)):
-                            cell.number_format = 'Rp #,##0'
-
-                # Auto width
-                for col in ws.columns:
-                    max_length = 0
-                    col_letter = col[0].column_letter
-                    for cell in col:
-                        if cell.value:
-                            max_length = max(max_length, len(str(cell.value)))
-                    ws.column_dimensions[col_letter].width = max_length + 2
-
-            format_sheet("Jurnal Umum", "LAPORAN JURNAL UMUM")
-            format_sheet("Buku Besar", "LAPORAN BUKU BESAR")
-            format_sheet("Laba Rugi", "LAPORAN LABA RUGI")
-            format_sheet("Neraca", "LAPORAN NERACA")
+            df.to_excel(writer, "Jurnal Umum", index=False)
+            bb.to_excel(writer, "Buku Besar", index=False)
+            laba_rugi.to_excel(writer, "Laba Rugi", index=False)
+            neraca.to_excel(writer, "Neraca", index=False)
 
         output.seek(0)
-
         st.download_button(
-            "📥 Download Laporan Excel (Format Rapi)",
+            "Download Excel",
             data=output,
-            file_name="laporan_akuntansi_format_rapi.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            file_name="laporan_akuntansi.xlsx"
         )
