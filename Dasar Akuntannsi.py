@@ -37,7 +37,7 @@ def rupiah(x):
     return f"Rp {x:,.0f}".replace(",", ".")
 
 # ===================== SIDEBAR =====================
-menu = st.sidebar.radio(
+menu = st.sidebar.selectbox(
     "Menu",
     [
         "Home & Jurnal",
