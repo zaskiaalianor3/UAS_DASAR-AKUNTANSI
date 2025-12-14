@@ -9,6 +9,45 @@ st.set_page_config(
     page_icon="📊"
 )
 
+# ===================== CSS MODERN (BIRU PUTIH) =====================
+st.markdown("""
+<style>
+.stApp { background-color: #F8FAFC; }
+
+section[data-testid="stSidebar"] {
+    background-color: #1E3A8A;
+}
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+.stButton>button {
+    background-color: #2563EB;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+    border: none;
+}
+.stButton>button:hover {
+    background-color: #1D4ED8;
+}
+
+div[data-testid="stMetric"] {
+    background: white;
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0,0,0,.08);
+}
+
+.stDataFrame {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.06);
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ===================== SESSION STATE =====================
 if "data" not in st.session_state:
     st.session_state.data = []
