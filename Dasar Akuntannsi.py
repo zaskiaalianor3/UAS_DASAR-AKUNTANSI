@@ -77,8 +77,9 @@ if menu == "Jurnal Umum":
 
     df = pd.DataFrame(st.session_state.data)
     st.subheader("Jurnal Umum")
-    st.dataframe(df, use_container_width=True)
-
+    df_tampil = df.drop(columns=["ID"])
+    st.dataframe(df_tampil, use_container_width=True)
+    
 # ================== BUKU BESAR ==================
 elif menu == "Buku Besar":
     st.title("Buku Besar")
