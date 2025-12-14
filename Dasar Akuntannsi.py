@@ -29,7 +29,33 @@ menu = st.sidebar.selectbox(
 
 # ================== HOME ==================
 if menu == "🏠 Home":
-    st.title("📊 Aplikasi Akuntansi")
+    st.markdown(
+        """
+        <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:80vh;
+            flex-direction:column;
+            text-align:center;
+        ">
+            <div style="display:flex; gap:40px; align-items:center;">
+                <img src="assets/logo_kampus.png" width="120">
+                <img src="assets/logo_siumk.png" width="120">
+            </div>
+
+            <h1 style="margin-top:30px; font-weight:700;">
+                SISTEM INFORMASI AKUNTANSI
+            </h1>
+
+            <h3 style="margin-top:10px; color:gray;">
+                Aplikasi Akuntansi Sederhana Berbasis Streamlit
+            </h3>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 # ================== JURNAL UMUM ==================
 elif menu == "📘 Jurnal Umum":
